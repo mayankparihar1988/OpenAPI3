@@ -1,0 +1,593 @@
+---
+openapi: 3.0.0
+info:
+  title: DesiNG API
+  description: This is DesiNG API
+  contact:
+    email: you@your-company.com
+  license:
+    name: proprietary
+  version: 1.0.0-oas3
+servers:
+- url: https://virtserver.swaggerhub.com/IBsolution/DesiNG/1.0.0
+paths:
+  /api/info:
+    get:
+      tags:
+        - General API
+      summary: Get api information
+      description: Request api information.
+      responses:
+        200:
+          description: Api info response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiInfo"
+  /token:
+    post:
+      tags:
+        - Token
+      summary: inserts a Device Token in the database
+      description: ""
+      parameters:
+        - name: action
+          in: query
+          description: action is used to distingush between two get equests
+          required: true
+          schema:
+            type: string
+            default: "putDeviceToken"
+            example: "putDeviceToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceTokensRequest"
+      responses:
+        200:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenCreatedSuccess"
+        400:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400Response"
+  /offer:
+    get:
+      tags:
+      - app
+      summary: get offer
+      description: |
+        By passing in the optional filter options, you can search for
+        available offers in the system. otherwie you will get all
+      operationId: getOffer
+      parameters:
+      - name: offerNumber
+        in: query
+        description: offerNumber to filter for, eg. "20180042"
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: status of offer.
+        required: false
+        schema:
+          enum:
+          - complete
+          - open
+          - not yet started
+          - cant be calculated
+          type: string
+      responses:
+        200:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Offer'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - app
+      summary: create offer
+      description: |
+        For creating new offers
+      operationId: createOffer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferData'
+      responses:
+        200:
+          description: OK
+  /task/{path}/:
+    get:
+      tags:
+      - app
+      summary: get task
+      description: |
+        todo
+      operationId: getTaskByPath
+      parameters:
+      - name: path
+        in: path
+        description: path of task
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Offer'
+        400:
+          description: bad input parameter
+  /task/:
+    get:
+      tags:
+      - app
+      summary: get task
+      description: |
+        todo
+      operationId: getTask
+      parameters:
+      - name: offerNumber
+        in: query
+        description: offernumber, eg. "20180042"
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: max number of results
+        required: false
+        schema:
+          type: integer
+      - name: status
+        in: query
+        description: |
+          possible status values:
+          0=in digitalization
+          1=task done
+          2=approved
+          3=denied
+        required: false
+        schema:
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+          type: integer
+      responses:
+        200:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Offer'
+        400:
+          description: bad input parameter
+    post:
+      tags:
+      - app
+      summary: create task
+      description: |
+        todo
+      operationId: createTask
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - offerNumber
+              - trayImages
+              type: object
+              properties:
+                offerNumber:
+                  description: The offer number for this task.
+                  type: string
+                trayImages:
+                  type: array
+                  items:
+                    format: base64
+                    type: string
+            encoding:
+              trayImages:
+                contentType: image/png, image/jpeg
+        required: true
+      responses:
+        200:
+          description: OK
+  /offerAddress:
+    get:
+      tags:
+        - Offer Address Interface
+      summary: Get known contract details/addresses that can be used by the DESI APP to create an offer
+      description: ""
+      responses:
+        200:
+          description: Return success notification to requester
+          content:
+            application/json:
+              schema:
+                  $ref: "#/components/schemas/AllExistingOfferAddress"
+        400:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400Response"  
+    post:
+      tags:
+        - Offer Address Interface
+      summary: Creates the contract details/addresses that can be used by the DESI APP to create an offer
+      description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOfferAddress"
+      responses:
+        201:
+          description: The address is registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfferAddress"
+        400:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400Response" 
+    put:
+      tags:
+        - Offer Address Interface
+      summary: Update the contract details/addresses by ID that can be used by the DESI APP to create an offer
+      description: ""
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferAddressObject"
+      responses:
+        202:
+          description: The operation on given address is successful
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {"success": true}
+        400:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400Response"
+    delete:
+      tags:
+        - Offer Address Interface
+      summary: Update the contract details/addresses by ID that can be used by the DESI APP to create an offer
+      description: ""
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+            description: Offer Address Id to be deleted
+            example: 123456
+      responses:
+        202:
+          description: The operation on given address is successful
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {"success": true}
+        400:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400Response"
+  /offerAddress/{id}:
+    get:
+      tags:
+        - Offer Address Interface
+      summary: Returns all tasks saved in the db with their status
+      description: ""
+      parameters:
+        - name: id
+          in: path
+          description: status of the Tasks that should be returned
+          required: true
+          schema:
+            type: integer
+            example: "2312018"
+      responses:
+        200:
+          description: Return success notification to requester
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OfferAddress"
+        400:
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error400Response"
+components:
+  schemas:
+    Package:
+      description: Digitalization package a customer can order
+      required:
+      - packageName
+      - vat
+      - price
+      - maxImageCount
+      - currency
+      type: object
+      properties:
+        packageName:
+          type: string
+          example: Package [S]
+        vat:
+          format: double
+          description: 'VAT in decimal-percent: 19% = 0.19'
+          type: number
+          example: 0.19
+        price:
+          format: double
+          description: price of this package
+          type: number
+          example: 5
+        maxImageCount:
+          description: the package is valid up to "maxImageCount" images
+          type: integer
+          example: 5
+        currency:
+          type: string
+          example: EUR
+    OfferData:
+      description: data requird to create an offer
+      type: object
+      properties:
+        imageCount:
+          description: number of images that should be included in the offer
+          type: integer
+          example: 512
+        recipient:
+          $ref: '#/components/schemas/OfferRecipient'
+    Offer:
+      description: after creating an offer, you get this as a result
+      type: object
+      properties:
+        offerNumber:
+          description: created offer ID with format "YYYYnnnn"
+          type: string
+          example: 20180042
+        createDate:
+          format: date-time
+          description: timestamp (ISO8601 format in UTC) of ID creation'
+          type: string
+          example: 2018-03-15T10:40:33.593Z
+        price:
+          format: double
+          description: net price according to given image count
+          type: number
+          example: 5000
+        currency:
+          type: string
+          example: EUR
+        packageName:
+          type: string
+          example: Package [S]
+        vat:
+          format: double
+          description: 'VAT in decimal-percent: 19% = 0.19'
+          type: number
+          example: 0.19
+        imageCount:
+          description: number of images covered by this offer
+          type: integer
+          example: 512
+        vatCost:
+          format: double
+          description: 5000 * 0.19 = 950 vat costs
+          type: number
+          example: 950
+        totalCostInclVAT:
+          format: double
+          description: 5000 + 950 = 5950 gross price
+          type: number
+          example: 5950
+        recipient:
+          $ref: '#/components/schemas/OfferRecipient'
+    OfferRecipient:
+      description: The name and address of the offer-recipient
+      required:
+      - name
+      - hospital
+      - address
+      - zip
+      - city
+      type: object
+      properties:
+        name:
+          type: string
+          example: Francisco Ingram
+        hospital:
+          type: string
+          example: Stuttgart Olga Krankenhaus
+        address:
+          type: string
+          example: Burdette Island Suite 816
+        zip:
+          type: string
+          example: 78532
+        city:
+          type: string
+          example: West Melbachester
+    OfferFilter:
+      description: The name and address of the offer-recipient
+      type: object
+      properties:
+        offerNumber:
+          description: created offer ID with format "YYYYnnnn"
+          type: string
+          example: 20180042
+        status:
+          enum:
+          - complete
+          - open
+          - notYetStarted
+          - undefined
+          type: string
+        packageName:
+          type: string
+          example: Package [S]
+        price:
+          format: double
+          type: number
+          example: 5
+    ApiInfo:
+      properties:
+        instance:
+          type: string
+          description: node instance number where request is currently executed
+          example: "0ddddbad-74d1-477d-4f00-56c9"
+        version:
+          type: string
+          description: current version identifier
+          example: "1.0.0"
+    DeviceTokensRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: "T00001"
+        token:
+          type: string
+          example: "AB7897782FFBBCD8979"
+        orgId:
+          type: integer
+          example: 5
+    TokenCreatedSuccess:
+      allOf:
+        - $ref: "#/components/schemas/DeviceTokensRequest"
+        - type: object
+          required:
+            - id
+          properties:
+            createdate:
+              type: string
+              format: date-time
+              example: "2018-03-08T12:10:12.000Z"
+    CreateOfferAddress:
+      properties:
+        name:
+          type: string
+          example: Francisco Ingram
+        hospital:
+          type: string
+          example: Stuttgart Olga Krankenhaus
+        address:
+          type: string
+          example: Burdette Island Suite 816
+        zip:
+          type: string
+          example: 78532
+        city:
+          type: string
+          example: West Melbachester
+    AllExistingOfferAddress:
+      type: object
+      properties:
+        startIndex:
+          type: integer
+          example: 1
+        itemsPerPage:
+          type: integer
+          example: 1
+        totalResults:
+          type: integer
+          example: 1
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/OfferAddressObject"
+    OfferAddress:
+      properties:
+        id:
+          type: integer
+          example: 28242
+        name:
+          type: string
+          format: uuid
+          default: ""
+          example: Milena
+        hospital:
+          type: string
+          format: uuid
+          example: Klinikum Landkreis Tuttlingen
+        address:
+          type: string
+          example: Burdette Island Suite 816
+        zip:
+          type: string
+          example: 78532
+        city:
+          type: string
+          format: uuid
+          example: Tuttlingen
+    OfferAddressObject:
+      allOf:
+        - $ref: "#/components/schemas/CreateOfferAddress"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              example: 1234
+    Error400Response:
+      properties:
+        success:
+          type: boolean
+          description: returns true if everything was ok
+          example: false
+    SuccessOfferAddress:
+      properties:
+        success:
+          type: boolean
+          example: true
+        id:
+          type: integer
+          example: 1234
+tags:
+- name: app
+  description: API for DESI APP
+- name: mturk
+  description: API for Amazon Mechanical Turk
